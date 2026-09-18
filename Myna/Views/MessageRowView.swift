@@ -65,7 +65,7 @@ struct MessageRowView: View {
                 }
 
                 if showsThreadFooter && !message.isThreadReply && message.replyCount > 0 {
-                    NavigationLink(value: message.id) {
+                    NavigationLink(value: Route.thread(message.id)) {
                         Label("\(message.replyCount) \(message.replyCount == 1 ? "reply" : "replies")",
                               systemImage: "bubble.left.and.bubble.right")
                             .font(.caption.weight(.medium))

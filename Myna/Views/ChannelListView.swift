@@ -1,10 +1,10 @@
 import SwiftData
 import SwiftUI
 
-/// Sidebar: workspace name, channel list with filter, create channel.
-/// `selection` carries the selected channel id to the detail column.
+/// Channels screen: workspace name, filterable channel list, create channel.
 struct ChannelListView: View {
-    @Binding var selection: UUID?
+    /// Called after a new channel is created so the caller can navigate to it.
+    var onCreate: (UUID) -> Void = { _ in }
 
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Channel.position) private var channels: [Channel]
@@ -18,20 +18,29 @@ struct ChannelListView: View {
     }
 
     var body: some View {
-        List(selection: $selection) {
+        List {
             Section("Channels") {
                 ForEach(filtered) { channel in
-                    Label {
-                        Text(channel.name)
-                    } icon: {
-                        Image(systemName: "number")
-                            .foregroundStyle(.secondary)
+                    NavigationLink(value: Route.channel(channel.id)) {
+                        Label {
+                            HStack {
+                                Text(channel.name)
+                                Spacer()
+                                if !channel.messages.isEmpty {
+                                    Text("\(channel.messages.count)")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                        } icon: {
+                            Image(systemName: "number")
+                                .foregroundStyle(.secondary)
+                        }
                     }
-                    .tag(channel.id)
                 }
             }
         }
-        .listStyle(.sidebar)
+        .listStyle(.plain)
         .searchable(text: $filter, prompt: "Filter channels")
         .navigationTitle("My Notes")
         .toolbar {
@@ -52,7 +61,7 @@ struct ChannelListView: View {
         }
         .sheet(isPresented: $showingNewChannel) {
             NewChannelSheet { channel in
-                selection = channel.id
+                onCreate(channel.id)
             }
         }
     }
