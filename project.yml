@@ -13,7 +13,7 @@ targets:
       path: Myna/Info.plist
       properties:
         CFBundleDisplayName: Myna
-        UILaunchScreen_Generation: true
+        UILaunchScreen: {}
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
           - UIInterfaceOrientationLandscapeLeft
@@ -35,4 +35,5 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.and1truong.myna.tests
+        GENERATE_INFOPLIST_FILE: YES
         SWIFT_VERSION: "5.0"
