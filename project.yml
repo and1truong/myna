@@ -18,12 +18,18 @@ targets:
           - UIInterfaceOrientationPortrait
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
         UIApplicationSupportsIndirectInputEvents: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.and1truong.myna
         SWIFT_VERSION: "5.0"
         MARKETING_VERSION: "0.1"
+        TARGETED_DEVICE_FAMILY: "1,2"
   MynaTests:
     type: bundle.unit-test
     platform: iOS
