@@ -1,0 +1,38 @@
+name: Myna
+options:
+  bundleIdPrefix: com.and1truong
+  xcodeVersion: "16.0"
+targets:
+  Myna:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: Myna
+    info:
+      path: Myna/Info.plist
+      properties:
+        CFBundleDisplayName: Myna
+        UILaunchScreen_Generation: true
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UIApplicationSupportsIndirectInputEvents: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.and1truong.myna
+        SWIFT_VERSION: "5.0"
+        MARKETING_VERSION: "0.1"
+  MynaTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: MynaTests
+    dependencies:
+      - target: Myna
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.and1truong.myna.tests
+        SWIFT_VERSION: "5.0"
