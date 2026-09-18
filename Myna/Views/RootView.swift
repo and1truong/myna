@@ -23,22 +23,21 @@ struct RootView: View {
     var body: some View {
         NavigationSplitView(columnVisibility: $navigation.columnVisibility) {
             ChannelListView(selection: channelSelection)
-        } content: {
-            Group {
-                if let channelID = navigation.selectedChannelID {
+                // Item-driven presentation: lands in the content column when
+                // expanded (a swap, not a push) and pushes when collapsed —
+                // one binding drives the channel on both form factors.
+                .navigationDestination(item: channelSelection) { channelID in
                     ChannelDestination(channelID: channelID)
                         .id(channelID)
-                } else {
-                    ContentUnavailableView(
-                        "Select a channel",
-                        systemImage: "number",
-                        description: Text("Pick a channel from the sidebar.")
-                    )
                 }
-            }
-            // Presenting an item from the content column lands in the detail
-            // column when expanded and pushes when collapsed — one binding
-            // drives the thread on both form factors.
+        } content: {
+            ContentUnavailableView(
+                "Select a channel",
+                systemImage: "number",
+                description: Text("Pick a channel from the sidebar.")
+            )
+            // Same mechanism one column further right: the thread appears in
+            // the detail column when expanded and pushes when collapsed.
             .navigationDestination(item: $navigation.selectedThreadID) { rootID in
                 ThreadView(rootID: rootID)
             }
