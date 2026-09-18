@@ -18,8 +18,8 @@ struct MessageRowView: View {
     let message: Message
     /// Hides the "N replies" footer inside the thread itself.
     var showsThreadFooter: Bool = true
-    /// Pushes the thread for this root message. Provided by the channel stream
-    /// because NavigationLink can't trigger from inside a context menu.
+    /// Opens the thread for this root message — pushes on the stack at compact
+    /// width, fills the split-view detail column at regular width.
     var onReply: (() -> Void)? = nil
 
     @Environment(\.modelContext) private var modelContext
@@ -65,7 +65,7 @@ struct MessageRowView: View {
                 }
 
                 if showsThreadFooter && !message.isThreadReply && message.replyCount > 0 {
-                    NavigationLink(value: Route.thread(message.id)) {
+                    Button { onReply?() } label: {
                         Label("\(message.replyCount) \(message.replyCount == 1 ? "reply" : "replies")",
                               systemImage: "bubble.left.and.bubble.right")
                             .font(.caption.weight(.medium))

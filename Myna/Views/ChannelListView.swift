@@ -5,6 +5,9 @@ import SwiftUI
 struct ChannelListView: View {
     /// Called after a new channel is created so the caller can navigate to it.
     var onCreate: (UUID) -> Void = { _ in }
+    /// Non-nil in a `NavigationSplitView` sidebar: rows become selection-driven
+    /// instead of `NavigationLink` pushes.
+    var selection: Binding<UUID?>? = nil
 
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Channel.position) private var channels: [Channel]
@@ -18,28 +21,7 @@ struct ChannelListView: View {
     }
 
     var body: some View {
-        List {
-            Section("Channels") {
-                ForEach(filtered) { channel in
-                    NavigationLink(value: Route.channel(channel.id)) {
-                        Label {
-                            HStack {
-                                Text(channel.name)
-                                Spacer()
-                                if !channel.messages.isEmpty {
-                                    Text("\(channel.messages.count)")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                }
-                            }
-                        } icon: {
-                            Image(systemName: "number")
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                }
-            }
-        }
+        list
         .listStyle(.plain)
         .searchable(text: $filter, prompt: "Filter channels")
         .navigationTitle("My Notes")
@@ -63,6 +45,50 @@ struct ChannelListView: View {
             NewChannelSheet { channel in
                 onCreate(channel.id)
             }
+        }
+    }
+
+    @ViewBuilder private var list: some View {
+        if let selection {
+            List(selection: selection) {
+                channelRows
+            }
+        } else {
+            List {
+                channelRows
+            }
+        }
+    }
+
+    @ViewBuilder private var channelRows: some View {
+        Section("Channels") {
+            ForEach(filtered) { channel in
+                if selection != nil {
+                    row(channel)
+                        .tag(channel.id)
+                } else {
+                    NavigationLink(value: Route.channel(channel.id)) {
+                        row(channel)
+                    }
+                }
+            }
+        }
+    }
+
+    private func row(_ channel: Channel) -> some View {
+        Label {
+            HStack {
+                Text(channel.name)
+                Spacer()
+                if !channel.messages.isEmpty {
+                    Text("\(channel.messages.count)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        } icon: {
+            Image(systemName: "number")
+                .foregroundStyle(.secondary)
         }
     }
 }

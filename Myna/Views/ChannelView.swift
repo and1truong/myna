@@ -15,6 +15,9 @@ enum ChannelTab: String, CaseIterable, Identifiable {
 
 struct ChannelView: View {
     let channel: Channel
+    /// Non-nil in a `NavigationSplitView`: a thread tap is reported to the
+    /// caller (shown in the detail column) instead of pushed on the stack.
+    var onOpenThread: ((UUID) -> Void)? = nil
     @State private var tab: ChannelTab = .messages
 
     private var roots: [Message] {
@@ -28,7 +31,7 @@ struct ChannelView: View {
             ChannelTabsBar(selection: $tab)
             switch tab {
             case .messages:
-                MessageStreamView(channel: channel, roots: roots)
+                MessageStreamView(channel: channel, roots: roots, onOpenThread: onOpenThread)
             }
         }
         .navigationTitle("#\(channel.name)")
@@ -69,6 +72,7 @@ private struct ChannelTabsBar: View {
 private struct MessageStreamView: View {
     let channel: Channel
     let roots: [Message]
+    var onOpenThread: ((UUID) -> Void)? = nil
 
     @State private var threadID: UUID?
 
@@ -80,7 +84,13 @@ private struct MessageStreamView: View {
                         ForEach(roots) { message in
                             MessageRowView(
                                 message: message,
-                                onReply: { threadID = message.id }
+                                onReply: {
+                                    if let onOpenThread {
+                                        onOpenThread(message.id)
+                                    } else {
+                                        threadID = message.id
+                                    }
+                                }
                             )
                             .id(message.id)
                         }
