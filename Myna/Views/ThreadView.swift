@@ -27,6 +27,19 @@ struct ThreadView: View {
         }
         .navigationTitle("Thread")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                VStack(spacing: 0) {
+                    Text("Thread")
+                        .font(.headline)
+                    if let channel = root?.effectiveChannel {
+                        Text("#\(channel.name)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+        }
         .onChange(of: matches.isEmpty) { _, gone in
             if gone { dismiss() }
         }
@@ -39,7 +52,20 @@ struct ThreadView: View {
                     LazyVStack(alignment: .leading, spacing: 0) {
                         MessageRowView(message: root, showsThreadFooter: false)
                             .background(Color.accentColor.opacity(0.06))
-                        Divider().padding(.leading, 14)
+                        if !root.sortedReplies.isEmpty {
+                            HStack(spacing: 8) {
+                                Text("\(root.replyCount) \(root.replyCount == 1 ? "reply" : "replies")")
+                                    .font(.caption.weight(.medium))
+                                    .foregroundStyle(.secondary)
+                                Rectangle()
+                                    .fill(Color.secondary.opacity(0.3))
+                                    .frame(height: 1)
+                            }
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 6)
+                        } else {
+                            Divider().padding(.leading, 14)
+                        }
                         ForEach(root.sortedReplies) { reply in
                             MessageRowView(message: reply, showsThreadFooter: false)
                                 .id(reply.id)
