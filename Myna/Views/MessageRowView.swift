@@ -18,10 +18,10 @@ struct MessageRowView: View {
     let message: Message
     /// Hides the "N replies" footer inside the thread itself.
     var showsThreadFooter: Bool = true
-    /// Pushes the thread for this root message. Provided by the channel stream
-    /// because NavigationLink can't trigger from inside a context menu.
-    var onReply: (() -> Void)? = nil
+    /// Highlights the row while its thread is open in the detail pane.
+    var isSelected: Bool = false
 
+    @Environment(NavigationModel.self) private var navigation
     @Environment(\.modelContext) private var modelContext
     @State private var sheet: MessageSheet?
     @State private var confirmingDelete = false
@@ -65,7 +65,7 @@ struct MessageRowView: View {
                 }
 
                 if showsThreadFooter && !message.isThreadReply && message.replyCount > 0 {
-                    NavigationLink(value: Route.thread(message.id)) {
+                    Button { navigation.openThread(message.id) } label: {
                         Label("\(message.replyCount) \(message.replyCount == 1 ? "reply" : "replies")",
                               systemImage: "bubble.left.and.bubble.right")
                             .font(.caption.weight(.medium))
@@ -79,6 +79,7 @@ struct MessageRowView: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 7)
+        .background(isSelected ? Color.accentColor.opacity(0.08) : .clear)
         .contentShape(Rectangle())
         .contextMenu { actions }
         .sheet(item: $sheet) { sheet in
@@ -101,8 +102,8 @@ struct MessageRowView: View {
 
     @ViewBuilder
     private var actions: some View {
-        if let onReply {
-            Button { onReply() } label: {
+        if showsThreadFooter && !message.isThreadReply {
+            Button { navigation.openThread(message.id) } label: {
                 Label("Reply in thread", systemImage: "bubble.left.and.bubble.right")
             }
         }

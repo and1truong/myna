@@ -1,33 +1,55 @@
 import SwiftData
 import SwiftUI
 
-/// iPhone adaptation of the desktop three-pane layout: a channels screen that
-/// pushes the channel view, which pushes the thread — one `Route` enum keeps
-/// channel and message destinations distinct.
-enum Route: Hashable {
-    case channel(UUID)
-    case thread(UUID)
-}
-
+/// Adaptive root: a three-column `NavigationSplitView`. Expanded (iPad,
+/// iPhone landscape where space allows) the columns are channels → channel →
+/// thread; compact (iPhone portrait, Split View) it collapses into the same
+/// Channels → Channel → Thread stack as before — one `NavigationModel` holds
+/// the selections either way.
 struct RootView: View {
     @Environment(\.modelContext) private var modelContext
-    @State private var path = NavigationPath()
+    @State private var navigation = NavigationModel()
     @Query private var channels: [Channel]
 
+    /// Routes sidebar taps through `selectChannel` so switching channels also
+    /// closes a thread belonging to the previous channel.
+    private var channelSelection: Binding<UUID?> {
+        Binding(
+            get: { navigation.selectedChannelID },
+            set: { if let id = $0 { navigation.selectChannel(id) } }
+        )
+    }
+
     var body: some View {
-        NavigationStack(path: $path) {
-            ChannelListView { channelID in
-                path.append(Route.channel(channelID))
-            }
-            .navigationDestination(for: Route.self) { route in
-                switch route {
-                case .channel(let id):
-                    ChannelDestination(channelID: id)
-                case .thread(let id):
-                    ThreadView(rootID: id)
+        NavigationSplitView(columnVisibility: $navigation.columnVisibility) {
+            ChannelListView(selection: channelSelection)
+        } content: {
+            Group {
+                if let channelID = navigation.selectedChannelID {
+                    ChannelDestination(channelID: channelID)
+                        .id(channelID)
+                } else {
+                    ContentUnavailableView(
+                        "Select a channel",
+                        systemImage: "number",
+                        description: Text("Pick a channel from the sidebar.")
+                    )
                 }
             }
+            // Presenting an item from the content column lands in the detail
+            // column when expanded and pushes when collapsed — one binding
+            // drives the thread on both form factors.
+            .navigationDestination(item: $navigation.selectedThreadID) { rootID in
+                ThreadView(rootID: rootID)
+            }
+        } detail: {
+            ContentUnavailableView(
+                "No thread selected",
+                systemImage: "bubble.left.and.bubble.right",
+                description: Text("Open a thread to follow the conversation here.")
+            )
         }
+        .environment(navigation)
         .task {
             if channels.isEmpty {
                 NoteStore(context: modelContext).seedDefaultChannels()
@@ -41,7 +63,7 @@ struct RootView: View {
     }
 }
 
-/// Resolves a channel id to its model so routes stay value-typed.
+/// Resolves a channel id to its model so selection stays value-typed.
 private struct ChannelDestination: View {
     let channelID: UUID
     @Query private var matches: [Channel]
