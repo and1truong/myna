@@ -70,7 +70,7 @@ private struct MessageStreamView: View {
     let channel: Channel
     let roots: [Message]
 
-    @State private var threadID: UUID?
+    @Environment(NavigationModel.self) private var navigation
 
     var body: some View {
         VStack(spacing: 0) {
@@ -80,7 +80,7 @@ private struct MessageStreamView: View {
                         ForEach(roots) { message in
                             MessageRowView(
                                 message: message,
-                                onReply: { threadID = message.id }
+                                isSelected: navigation.selectedThreadID == message.id
                             )
                             .id(message.id)
                         }
@@ -101,9 +101,6 @@ private struct MessageStreamView: View {
                 }
             }
             ComposerView(channel: channel)
-        }
-        .navigationDestination(item: $threadID) { id in
-            ThreadView(rootID: id)
         }
     }
 

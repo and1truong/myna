@@ -2,10 +2,12 @@ import SwiftData
 import SwiftUI
 
 /// Channels screen: workspace name, filterable channel list, create channel.
+/// Drives the split view's content column through `selection` — expanded, the
+/// selected row stays highlighted; compact, a tap pushes the channel.
 struct ChannelListView: View {
-    /// Called after a new channel is created so the caller can navigate to it.
-    var onCreate: (UUID) -> Void = { _ in }
+    @Binding var selection: UUID?
 
+    @Environment(NavigationModel.self) private var navigation
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Channel.position) private var channels: [Channel]
     @State private var filter = ""
@@ -18,25 +20,24 @@ struct ChannelListView: View {
     }
 
     var body: some View {
-        List {
+        List(selection: $selection) {
             Section("Channels") {
                 ForEach(filtered) { channel in
-                    NavigationLink(value: Route.channel(channel.id)) {
-                        Label {
-                            HStack {
-                                Text(channel.name)
-                                Spacer()
-                                if !channel.messages.isEmpty {
-                                    Text("\(channel.messages.count)")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                }
+                    Label {
+                        HStack {
+                            Text(channel.name)
+                            Spacer()
+                            if !channel.messages.isEmpty {
+                                Text("\(channel.messages.count)")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
                             }
-                        } icon: {
-                            Image(systemName: "number")
-                                .foregroundStyle(.secondary)
                         }
+                    } icon: {
+                        Image(systemName: "number")
+                            .foregroundStyle(.secondary)
                     }
+                    .tag(channel.id)
                 }
             }
         }
@@ -61,7 +62,7 @@ struct ChannelListView: View {
         }
         .sheet(isPresented: $showingNewChannel) {
             NewChannelSheet { channel in
-                onCreate(channel.id)
+                navigation.selectChannel(channel.id)
             }
         }
     }

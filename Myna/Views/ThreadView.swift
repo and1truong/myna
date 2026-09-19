@@ -1,13 +1,15 @@
 import SwiftData
 import SwiftUI
 
-/// Slack's thread pane, pushed full-screen on iPhone: root note on top, replies
-/// below, reply composer at the bottom. Agent @mentions work here too — agent
-/// responses land as thread replies.
+/// Slack's thread pane — the split view's detail column on iPad, a push on
+/// iPhone: root note on top, replies below, reply composer at the bottom.
+/// Agent @mentions work here too — agent responses land as thread replies.
 struct ThreadView: View {
     let rootID: UUID
 
+    @Environment(NavigationModel.self) private var navigation
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Query private var matches: [Message]
 
     init(rootID: UUID) {
@@ -27,8 +29,23 @@ struct ThreadView: View {
         }
         .navigationTitle("Thread")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            // Compact offers Back; expanded needs an explicit close to return
+            // the detail column to its placeholder.
+            if horizontalSizeClass == .regular {
+                ToolbarItem(placement: .primaryAction) {
+                    Button { navigation.closeThread() } label: {
+                        Image(systemName: "xmark")
+                    }
+                    .accessibilityLabel("Close thread")
+                }
+            }
+        }
         .onChange(of: matches.isEmpty) { _, gone in
-            if gone { dismiss() }
+            if gone {
+                navigation.closeThread()
+                dismiss()
+            }
         }
     }
 
