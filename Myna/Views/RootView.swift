@@ -6,6 +6,7 @@ import SwiftUI
 /// thread; compact (iPhone portrait, Split View) it collapses into the same
 /// Channels → Channel → Thread stack as before — one `NavigationModel` holds
 /// the selections either way.
+@MainActor
 struct RootView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var navigation = NavigationModel()
