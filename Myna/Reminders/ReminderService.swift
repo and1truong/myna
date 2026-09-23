@@ -90,9 +90,10 @@ enum ReminderService {
     }
 
     static func cancel(for messageID: UUID) {
-        UNUserNotificationCenter.current().removePendingNotificationRequests(
-            withIdentifiers: [identifier(for: messageID)]
-        )
+        let center = UNUserNotificationCenter.current()
+        let identifiers = [identifier(for: messageID)]
+        center.removePendingNotificationRequests(withIdentifiers: identifiers)
+        center.removeDeliveredNotifications(withIdentifiers: identifiers)
     }
 }
 
