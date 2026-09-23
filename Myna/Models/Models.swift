@@ -4,6 +4,7 @@ import SwiftData
 enum AuthorType: String, Codable {
     case human
     case agent
+    case feed
 }
 
 @Model
@@ -47,6 +48,8 @@ final class Message {
     var updatedAt: Date = Date()
     var authorTypeRaw: String = AuthorType.human.rawValue
     var authorID: String = NoteStore.humanAuthorID
+    /// External article URL for feed posts; nil for ordinary notes.
+    var externalURL: String?
     /// True while an agent response is being generated (the "is thinking…" placeholder).
     var isPending: Bool = false
     /// A local notification attached to this message, if one was scheduled.
@@ -66,6 +69,7 @@ final class Message {
          parent: Message? = nil,
          authorType: AuthorType = .human,
          authorID: String = NoteStore.humanAuthorID,
+         externalURL: String? = nil,
          isPending: Bool = false,
          createdAt: Date = Date()) {
         self.content = content
@@ -73,6 +77,7 @@ final class Message {
         self.parent = parent
         self.authorTypeRaw = authorType.rawValue
         self.authorID = authorID
+        self.externalURL = externalURL
         self.isPending = isPending
         self.createdAt = createdAt
         self.updatedAt = createdAt

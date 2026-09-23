@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A11A00000000000000000007 /* RSSParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11A00000000000000000008 /* RSSParserTests.swift */; };
+		A11A00000000000000000001 /* RSSModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11A00000000000000000004 /* RSSModels.swift */; };
+		A11A00000000000000000002 /* RSSService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11A00000000000000000005 /* RSSService.swift */; };
+		A11A00000000000000000003 /* RSSFeedSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11A00000000000000000006 /* RSSFeedSettingsView.swift */; };
 		0418E99F4EB6022FC7EE6E48 /* MarkdownText.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED2ADDF188F2CA07EA6408B6 /* MarkdownText.swift */; };
 		13FE5826C3F4BA7D893F8D5B /* MynaAgent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16869209FB43C1760A583CBE /* MynaAgent.swift */; };
 		1C88CD736A06C704F61DB7AA /* AgentService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F207612208691F0E7A172888 /* AgentService.swift */; };
@@ -42,6 +46,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		A11A00000000000000000008 /* RSSParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RSSParserTests.swift; sourceTree = "<group>"; };
+		A11A00000000000000000004 /* RSSModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RSSModels.swift; sourceTree = "<group>"; };
+		A11A00000000000000000005 /* RSSService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RSSService.swift; sourceTree = "<group>"; };
+		A11A00000000000000000006 /* RSSFeedSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RSSFeedSettingsView.swift; sourceTree = "<group>"; };
 		16869209FB43C1760A583CBE /* MynaAgent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MynaAgent.swift; sourceTree = "<group>"; };
 		1E26355BD7753467AA3EEEEB /* ComposerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposerView.swift; sourceTree = "<group>"; };
 		231BCA5DC116CE284D039DA3 /* ChannelListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelListView.swift; sourceTree = "<group>"; };
@@ -94,6 +102,7 @@
 		34B2D57EEF338D1C2D564DA4 /* MynaTests */ = {
 			isa = PBXGroup;
 			children = (
+				A11A00000000000000000008 /* RSSParserTests.swift */,
 				B6BFDC22E1A0C02E00325472 /* MentionParserTests.swift */,
 				8A07070BF90300D232EA2F44 /* MynaTests.swift */,
 				B468BDA7B5C947E6A8F79A1D /* ReminderParserTests.swift */,
@@ -105,6 +114,7 @@
 			isa = PBXGroup;
 			children = (
 				E66EB0D33EF6801253E476EC /* Models.swift */,
+				A11A00000000000000000004 /* RSSModels.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -130,6 +140,7 @@
 			children = (
 				693FF5848B646C95C630FB0C /* DemoSeeder.swift */,
 				AE1684FAA86C191A478E9516 /* NoteStore.swift */,
+				A11A00000000000000000005 /* RSSService.swift */,
 			);
 			path = Store;
 			sourceTree = "<group>";
@@ -137,6 +148,7 @@
 		609959B0DE4FAFD96EA04CBC /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				A11A00000000000000000006 /* RSSFeedSettingsView.swift */,
 				241824E1CED7CB5CA733AB77 /* AvatarView.swift */,
 				231BCA5DC116CE284D039DA3 /* ChannelListView.swift */,
 				BEF72473A66E2A56E051E705 /* ChannelView.swift */,
@@ -247,6 +259,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A11A00000000000000000007 /* RSSParserTests.swift in Sources */,
 				1D5219FB2E95FBBA4AAA93B4 /* MentionParserTests.swift in Sources */,
 				6F032367D6BDAB5952011432 /* MynaTests.swift in Sources */,
 				A468BDA7B5C947E6A8F79A1D /* ReminderParserTests.swift in Sources */,
@@ -257,6 +270,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A11A00000000000000000001 /* RSSModels.swift in Sources */,
+				A11A00000000000000000002 /* RSSService.swift in Sources */,
+				A11A00000000000000000003 /* RSSFeedSettingsView.swift in Sources */,
 				C964341A39C92B9C627456B4 /* AgentRegistry.swift in Sources */,
 				1C88CD736A06C704F61DB7AA /* AgentService.swift in Sources */,
 				FB886244E08C7B0AFDBEF239 /* AvatarView.swift in Sources */,

@@ -9,7 +9,8 @@ struct MynaApp: App {
 
     init() {
         do {
-            container = try ModelContainer(for: Workspace.self, Channel.self, Message.self)
+            container = try ModelContainer(for: Workspace.self, Channel.self, Message.self,
+                                           RSSFeed.self, RSSImport.self)
         } catch {
             fatalError("Failed to create SwiftData container: \(error)")
         }
