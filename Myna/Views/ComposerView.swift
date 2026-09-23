@@ -12,6 +12,8 @@ struct ComposerView: View {
 
     @Environment(\.modelContext) private var modelContext
     @State private var text = ""
+    @State private var reminderError: String?
+    @State private var isSchedulingReminder = false
 
     private let registry = AgentRegistry.default
 
@@ -42,18 +44,30 @@ struct ComposerView: View {
                 .background(Color(.secondarySystemBackground))
                 .clipShape(RoundedRectangle(cornerRadius: 17))
 
+                if isSchedulingReminder {
+                    ProgressView()
+                        .controlSize(.small)
+                }
                 Button(action: send) {
                     Image(systemName: "arrow.up.circle.fill")
                         .font(.system(size: 30))
-                        .foregroundStyle(canSend ? Color.accentColor : Color(.tertiaryLabel))
+                        .foregroundStyle(canSend && !isSchedulingReminder ? Color.accentColor : Color(.tertiaryLabel))
                 }
-                .disabled(!canSend)
+                .disabled(!canSend || isSchedulingReminder)
                 .accessibilityLabel("Send")
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
         }
         .background(.bar)
+        .alert("Reminder not set", isPresented: Binding(
+            get: { reminderError != nil },
+            set: { if !$0 { reminderError = nil } }
+        )) {
+            Button("OK") { reminderError = nil }
+        } message: {
+            Text(reminderError ?? "")
+        }
     }
 
     private var suggestionList: some View {
@@ -86,7 +100,16 @@ struct ComposerView: View {
 
     private func send() {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return }
+        guard !trimmed.isEmpty, !isSchedulingReminder else { return }
+        do {
+            if let reminder = try ReminderParser.parseCommand(trimmed) {
+                sendReminder(reminder, commandText: trimmed)
+                return
+            }
+        } catch {
+            reminderError = error.localizedDescription
+            return
+        }
         let store = NoteStore(context: modelContext)
         let message: Message
         if let root {
@@ -97,6 +120,58 @@ struct ComposerView: View {
         text = ""
         let service = AgentService(store: store, registry: registry)
         Task { await service.processMentions(in: message) }
+    }
+
+    private func sendReminder(_ reminder: ReminderRequest, commandText: String) {
+        isSchedulingReminder = true
+        let channelID = channel.id
+        let rootID = root?.id
+        let store = NoteStore(context: modelContext)
+        Task { @MainActor in
+            defer { isSchedulingReminder = false }
+            do {
+                try await ReminderService.ensureAuthorization()
+                let currentRoot: Message?
+                let currentChannel: Channel?
+                if let rootID {
+                    guard let savedRoot = store.message(withID: rootID) else {
+                        throw ReminderError.destinationUnavailable
+                    }
+                    currentRoot = savedRoot
+                    currentChannel = nil
+                } else {
+                    guard let savedChannel = store.channel(withID: channelID) else {
+                        throw ReminderError.destinationUnavailable
+                    }
+                    currentRoot = nil
+                    currentChannel = savedChannel
+                }
+
+                let anchor = try store.postReminderAnchor(reminder,
+                                                          in: currentChannel,
+                                                          replyingTo: currentRoot)
+                let anchorID = anchor.id
+                do {
+                    try await ReminderService.schedule(reminder, messageID: anchorID)
+                    guard let savedAnchor = store.message(withID: anchorID) else {
+                        ReminderService.cancel(for: anchorID)
+                        return
+                    }
+                    try store.setReminder(reminder, for: savedAnchor)
+                    if text.trimmingCharacters(in: .whitespacesAndNewlines) == commandText {
+                        text = ""
+                    }
+                } catch {
+                    ReminderService.cancel(for: anchorID)
+                    if let savedAnchor = store.message(withID: anchorID) {
+                        store.delete(savedAnchor)
+                    }
+                    throw error
+                }
+            } catch {
+                reminderError = error.localizedDescription
+            }
+        }
     }
 }
 

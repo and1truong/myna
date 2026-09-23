@@ -54,4 +54,20 @@ final class NavigationModelTests: XCTestCase {
         XCTAssertEqual(navigation.selectedChannelID, channel)
         XCTAssertNil(navigation.selectedThreadID)
     }
+
+    func testReminderNavigationFocusesMessageInThread() {
+        let channel = UUID()
+        let root = UUID()
+        let reply = UUID()
+
+        navigation.selectChannel(channel)
+        navigation.openThread(root, focusMessageID: reply)
+
+        XCTAssertEqual(navigation.selectedChannelID, channel)
+        XCTAssertEqual(navigation.selectedThreadID, root)
+        XCTAssertEqual(navigation.focusedMessageID, reply)
+
+        navigation.closeThread()
+        XCTAssertNil(navigation.focusedMessageID)
+    }
 }

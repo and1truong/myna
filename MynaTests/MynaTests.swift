@@ -104,6 +104,49 @@ final class NoteStoreTests: XCTestCase {
         XCTAssertEqual(try fetchAll(Message.self).count, 3)
     }
 
+    func testReminderDestinationsFollowRootReplyAndMovedThread() throws {
+        let inbox = store.createChannel(name: "inbox")
+        let ideas = store.createChannel(name: "ideas")
+        let root = store.postMessage("root", in: inbox)
+        let reply = store.postReply("15m nữa nhắc anh làm việc", to: root)
+
+        let rootDestination = try XCTUnwrap(store.reminderDestination(for: root.id))
+        XCTAssertEqual(rootDestination.channelID, inbox.id)
+        XCTAssertEqual(rootDestination.rootID, root.id)
+        XCTAssertEqual(rootDestination.messageID, root.id)
+
+        store.move(root, to: ideas)
+
+        let replyDestination = try XCTUnwrap(store.reminderDestination(for: reply.id))
+        XCTAssertEqual(replyDestination.channelID, ideas.id)
+        XCTAssertEqual(replyDestination.rootID, root.id)
+        XCTAssertEqual(replyDestination.messageID, reply.id)
+
+        let deletedReplyID = reply.id
+        store.delete(reply)
+        XCTAssertNil(store.reminderDestination(for: deletedReplyID))
+    }
+
+    func testReminderCommandCreatesReadableAnchorInThread() throws {
+        let channel = store.createChannel(name: "inbox")
+        let root = store.postMessage("project", in: channel)
+        let reminder = try XCTUnwrap(ReminderParser.parseCommand(
+            "/remind 15m làm việc nọ việc kia",
+            now: Date(timeIntervalSince1970: 1_700_000_000)
+        ))
+
+        let anchor = try store.postReminderAnchor(reminder, in: nil, replyingTo: root)
+        XCTAssertEqual(anchor.content, "🔔 làm việc nọ việc kia")
+        XCTAssertFalse(anchor.content.contains("/remind"))
+        XCTAssertEqual(anchor.parent?.id, root.id)
+        XCTAssertEqual(anchor.effectiveChannel?.id, channel.id)
+        XCTAssertNil(anchor.reminderDueAt)
+
+        try store.setReminder(reminder, for: anchor)
+        XCTAssertEqual(anchor.reminderDueAt, reminder.dueAt)
+        XCTAssertEqual(anchor.reminderTitle, reminder.title)
+    }
+
     // MARK: - Edit / delete
 
     func testEditMessage() throws {

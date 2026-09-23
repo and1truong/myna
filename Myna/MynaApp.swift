@@ -1,9 +1,11 @@
 import SwiftData
 import SwiftUI
+import UserNotifications
 
 @main
 struct MynaApp: App {
     let container: ModelContainer
+    private let reminderDelegate = ReminderNotificationDelegate()
 
     init() {
         do {
@@ -11,6 +13,7 @@ struct MynaApp: App {
         } catch {
             fatalError("Failed to create SwiftData container: \(error)")
         }
+        UNUserNotificationCenter.current().delegate = reminderDelegate
     }
 
     var body: some Scene {

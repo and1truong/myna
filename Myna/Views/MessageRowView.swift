@@ -58,6 +58,16 @@ struct MessageRowView: View {
                 }
                 .font(.body)
 
+                if let dueAt = message.reminderDueAt {
+                    Label {
+                        Text("Reminder · \(dueAt.formatted(date: .abbreviated, time: .shortened))")
+                    } icon: {
+                        Image(systemName: "bell")
+                    }
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                }
+
                 if message.isPending {
                     ProgressView()
                         .controlSize(.small)
@@ -102,6 +112,13 @@ struct MessageRowView: View {
 
     @ViewBuilder
     private var actions: some View {
+        if message.reminderDueAt != nil {
+            Button {
+                NoteStore(context: modelContext).clearReminder(for: message)
+            } label: {
+                Label("Remove reminder", systemImage: "bell.slash")
+            }
+        }
         if showsThreadFooter && !message.isThreadReply {
             Button { navigation.openThread(message.id) } label: {
                 Label("Reply in thread", systemImage: "bubble.left.and.bubble.right")

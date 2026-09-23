@@ -6,9 +6,11 @@ import SwiftUI
 /// thread; compact (iPhone portrait, Split View) it collapses into the same
 /// Channels → Channel → Thread stack as before — one `NavigationModel` holds
 /// the selections either way.
+@MainActor
 struct RootView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var navigation = NavigationModel()
+    private let reminderNavigation = ReminderNavigation.shared
     @Query private var channels: [Channel]
 
     /// Routes sidebar taps through `selectChannel` so switching channels also
@@ -58,7 +60,24 @@ struct RootView: View {
                 DemoSeeder.seed(context: modelContext)
             }
             #endif
+            openPendingReminder()
         }
+        .onChange(of: reminderNavigation.pendingMessageID) { _, _ in
+            openPendingReminder()
+        }
+    }
+
+    private func openPendingReminder() {
+        guard let id = reminderNavigation.pendingMessageID else { return }
+        guard let destination = NoteStore(context: modelContext)
+            .reminderDestination(for: id) else {
+            reminderNavigation.pendingMessageID = nil
+            return
+        }
+        navigation.selectChannel(destination.channelID)
+        navigation.openThread(destination.rootID,
+                              focusMessageID: destination.messageID)
+        reminderNavigation.pendingMessageID = nil
     }
 }
 

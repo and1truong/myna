@@ -10,19 +10,23 @@ final class NavigationModel {
     var columnVisibility: NavigationSplitViewVisibility = .automatic
     var selectedChannelID: UUID?
     var selectedThreadID: UUID?
+    var focusedMessageID: UUID?
 
     func selectChannel(_ id: UUID) {
         if selectedChannelID != id {
             selectedThreadID = nil
+            focusedMessageID = nil
         }
         selectedChannelID = id
     }
 
-    func openThread(_ rootID: UUID) {
+    func openThread(_ rootID: UUID, focusMessageID: UUID? = nil) {
         selectedThreadID = rootID
+        focusedMessageID = focusMessageID
     }
 
     func closeThread() {
         selectedThreadID = nil
+        focusedMessageID = nil
     }
 }

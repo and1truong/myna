@@ -1,6 +1,12 @@
 import Foundation
 import SwiftData
 
+struct ReminderDestination {
+    let channelID: UUID
+    let rootID: UUID
+    let messageID: UUID
+}
+
 /// Domain operations over the SwiftData model context. Views and services go
 /// through this store rather than mutating models directly.
 final class NoteStore {
@@ -97,8 +103,74 @@ final class NoteStore {
     /// Deleting a root cascades to its entire thread; deleting a reply leaves
     /// the rest of the thread intact.
     func delete(_ message: Message) {
+        cancelReminders(in: message)
         context.delete(message)
         save()
+    }
+
+    func setReminder(_ reminder: ReminderRequest, for message: Message) throws {
+        message.reminderTitle = reminder.title
+        message.reminderDueAt = reminder.dueAt
+        do {
+            try context.save()
+        } catch {
+            message.reminderTitle = nil
+            message.reminderDueAt = nil
+            throw error
+        }
+    }
+
+    func message(withID id: UUID) -> Message? {
+        try? context.fetch(FetchDescriptor<Message>(
+            predicate: #Predicate<Message> { $0.id == id }
+        )).first
+    }
+
+    func channel(withID id: UUID) -> Channel? {
+        try? context.fetch(FetchDescriptor<Channel>(
+            predicate: #Predicate<Channel> { $0.id == id }
+        )).first
+    }
+
+    /// A command becomes a visible note only after notification permission is granted.
+    func postReminderAnchor(_ reminder: ReminderRequest,
+                            in channel: Channel?,
+                            replyingTo root: Message?) throws -> Message {
+        guard channel != nil || root != nil else { throw ReminderError.destinationUnavailable }
+        let anchor = Message(content: "🔔 \(reminder.title)",
+                             channel: root == nil ? channel : nil,
+                             parent: root)
+        context.insert(anchor)
+        do {
+            try context.save()
+        } catch {
+            context.delete(anchor)
+            throw error
+        }
+        return anchor
+    }
+
+    func reminderDestination(for id: UUID) -> ReminderDestination? {
+        guard let message = message(withID: id),
+              let channelID = message.effectiveChannel?.id else { return nil }
+        return ReminderDestination(channelID: channelID,
+                                   rootID: message.rootMessage.id,
+                                   messageID: message.id)
+    }
+
+    func clearReminder(for message: Message) {
+        ReminderService.cancel(for: message.id)
+        message.reminderTitle = nil
+        message.reminderDueAt = nil
+        save()
+    }
+
+    private func cancelReminders(in message: Message) {
+        // A permission prompt may still be open before reminderDueAt is saved.
+        ReminderService.cancel(for: message.id)
+        for reply in message.replies {
+            cancelReminders(in: reply)
+        }
     }
 
     /// Moves a root message — and with it, automatically, its whole thread —
