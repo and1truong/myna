@@ -31,6 +31,7 @@ struct MessageRowView: View {
             return AgentRegistry.default.agent(byID: message.authorID)?.displayName
                 ?? "@\(message.authorID)"
         }
+        if message.authorType == .feed { return message.authorID }
         return "Hong"
     }
 
@@ -57,6 +58,15 @@ struct MessageRowView: View {
                     }
                 }
                 .font(.body)
+
+                if message.authorType == .feed,
+                   let rawURL = message.externalURL,
+                   let url = URL(string: rawURL),
+                   ["https", "http"].contains(url.scheme?.lowercased() ?? "") {
+                    Link("Open original", destination: url)
+                        .font(.caption.weight(.medium))
+                        .padding(.top, 2)
+                }
 
                 if let dueAt = message.reminderDueAt {
                     Label {

@@ -14,6 +14,8 @@ struct ComposerView: View {
     @State private var text = ""
     @State private var reminderError: String?
     @State private var isSchedulingReminder = false
+    @State private var feedFeedback: String?
+    @State private var feedCommandInFlight = false
 
     private let registry = AgentRegistry.default
 
@@ -24,10 +26,19 @@ struct ComposerView: View {
 
     private var canSend: Bool {
         !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            && !isSchedulingReminder && !feedCommandInFlight
     }
 
     var body: some View {
         VStack(spacing: 0) {
+            if let feedFeedback {
+                Text(feedFeedback)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 6)
+            }
             if !suggestions.isEmpty {
                 suggestionList
             }
@@ -44,16 +55,16 @@ struct ComposerView: View {
                 .background(Color(.secondarySystemBackground))
                 .clipShape(RoundedRectangle(cornerRadius: 17))
 
-                if isSchedulingReminder {
+                if isSchedulingReminder || feedCommandInFlight {
                     ProgressView()
                         .controlSize(.small)
                 }
                 Button(action: send) {
                     Image(systemName: "arrow.up.circle.fill")
                         .font(.system(size: 30))
-                        .foregroundStyle(canSend && !isSchedulingReminder ? Color.accentColor : Color(.tertiaryLabel))
+                        .foregroundStyle(canSend ? Color.accentColor : Color(.tertiaryLabel))
                 }
-                .disabled(!canSend || isSchedulingReminder)
+                .disabled(!canSend)
                 .accessibilityLabel("Send")
             }
             .padding(.horizontal, 12)
@@ -100,7 +111,19 @@ struct ComposerView: View {
 
     private func send() {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty, !isSchedulingReminder else { return }
+        guard !trimmed.isEmpty, !isSchedulingReminder, !feedCommandInFlight else { return }
+        if let command = FeedCommand.parse(trimmed) {
+            guard command != .invalid else {
+                feedFeedback = FeedCommand.usage
+                return
+            }
+            text = ""
+            feedCommandInFlight = true
+            feedFeedback = "Working on feed…"
+            Task { await handleFeedCommand(command) }
+            return
+        }
+        feedFeedback = nil
         do {
             if let reminder = try ReminderParser.parseCommand(trimmed) {
                 sendReminder(reminder, commandText: trimmed)
@@ -171,6 +194,30 @@ struct ComposerView: View {
             } catch {
                 reminderError = error.localizedDescription
             }
+        }
+    }
+
+    @MainActor
+    private func handleFeedCommand(_ command: FeedCommand) async {
+        defer { feedCommandInFlight = false }
+        let store = RSSStore(context: modelContext)
+        do {
+            switch command {
+            case .subscribe(let url):
+                let feed = try await store.addFeed(url, to: channel)
+                feedFeedback = "Subscribed \(feed.title) to #\(channel.name). Future articles will appear here."
+            case .list:
+                let feeds = try store.feeds(in: channel)
+                feedFeedback = feeds.isEmpty ? "No feeds subscribed to #\(channel.name)." :
+                    feeds.map { "\($0.title): \($0.url)" }.joined(separator: "\n")
+            case .remove(let url):
+                try store.remove(url, from: channel)
+                feedFeedback = "Removed \(url) from #\(channel.name). Existing posts remain."
+            case .invalid:
+                feedFeedback = FeedCommand.usage
+            }
+        } catch {
+            feedFeedback = "\(error.localizedDescription) \(FeedCommand.usage)"
         }
     }
 }
