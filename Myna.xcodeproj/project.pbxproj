@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A10000000000000000000006 /* SlackSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000006 /* SlackSyncTests.swift */; };
+		A10000000000000000000001 /* SlackModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000001 /* SlackModels.swift */; };
+		A10000000000000000000002 /* SlackTokenStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000002 /* SlackTokenStore.swift */; };
+		A10000000000000000000003 /* SlackAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000003 /* SlackAPI.swift */; };
+		A10000000000000000000004 /* SlackSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000004 /* SlackSync.swift */; };
+		A10000000000000000000005 /* SlackFeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000005 /* SlackFeedView.swift */; };
 		0418E99F4EB6022FC7EE6E48 /* MarkdownText.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED2ADDF188F2CA07EA6408B6 /* MarkdownText.swift */; };
 		13FE5826C3F4BA7D893F8D5B /* MynaAgent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16869209FB43C1760A583CBE /* MynaAgent.swift */; };
 		1C88CD736A06C704F61DB7AA /* AgentService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F207612208691F0E7A172888 /* AgentService.swift */; };
@@ -40,6 +46,12 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		A20000000000000000000006 /* SlackSyncTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlackSyncTests.swift; sourceTree = "<group>"; };
+		A20000000000000000000001 /* SlackModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlackModels.swift; sourceTree = "<group>"; };
+		A20000000000000000000002 /* SlackTokenStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlackTokenStore.swift; sourceTree = "<group>"; };
+		A20000000000000000000003 /* SlackAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlackAPI.swift; sourceTree = "<group>"; };
+		A20000000000000000000004 /* SlackSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlackSync.swift; sourceTree = "<group>"; };
+		A20000000000000000000005 /* SlackFeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlackFeedView.swift; sourceTree = "<group>"; };
 		16869209FB43C1760A583CBE /* MynaAgent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MynaAgent.swift; sourceTree = "<group>"; };
 		1E26355BD7753467AA3EEEEB /* ComposerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposerView.swift; sourceTree = "<group>"; };
 		231BCA5DC116CE284D039DA3 /* ChannelListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelListView.swift; sourceTree = "<group>"; };
@@ -66,6 +78,18 @@
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
+		A30000000000000000000001 /* Slack */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000001 /* SlackModels.swift */,
+				A20000000000000000000002 /* SlackTokenStore.swift */,
+				A20000000000000000000003 /* SlackAPI.swift */,
+				A20000000000000000000004 /* SlackSync.swift */,
+				A20000000000000000000005 /* SlackFeedView.swift */,
+			);
+			path = Slack;
+			sourceTree = "<group>";
+		};
 		045083558A850B74133AFF34 /* Agents */ = {
 			isa = PBXGroup;
 			children = (
@@ -92,6 +116,7 @@
 			children = (
 				B6BFDC22E1A0C02E00325472 /* MentionParserTests.swift */,
 				8A07070BF90300D232EA2F44 /* MynaTests.swift */,
+				A20000000000000000000006 /* SlackSyncTests.swift */,
 			);
 			path = MynaTests;
 			sourceTree = "<group>";
@@ -143,6 +168,7 @@
 				8ACE3072CA3C8D433A6E6B8B /* MynaApp.swift */,
 				045083558A850B74133AFF34 /* Agents */,
 				3A339655886E9531DD9356A6 /* Models */,
+				A30000000000000000000001 /* Slack */,
 				56B354B4A19B68514B78BF79 /* Store */,
 				567783D1AB2A11488986FEF7 /* Utilities */,
 				609959B0DE4FAFD96EA04CBC /* Views */,
@@ -235,6 +261,7 @@
 			files = (
 				1D5219FB2E95FBBA4AAA93B4 /* MentionParserTests.swift in Sources */,
 				6F032367D6BDAB5952011432 /* MynaTests.swift in Sources */,
+				A10000000000000000000006 /* SlackSyncTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -242,6 +269,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A10000000000000000000001 /* SlackModels.swift in Sources */,
+				A10000000000000000000002 /* SlackTokenStore.swift in Sources */,
+				A10000000000000000000003 /* SlackAPI.swift in Sources */,
+				A10000000000000000000004 /* SlackSync.swift in Sources */,
+				A10000000000000000000005 /* SlackFeedView.swift in Sources */,
 				C964341A39C92B9C627456B4 /* AgentRegistry.swift in Sources */,
 				1C88CD736A06C704F61DB7AA /* AgentService.swift in Sources */,
 				FB886244E08C7B0AFDBEF239 /* AvatarView.swift in Sources */,

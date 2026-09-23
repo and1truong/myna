@@ -4,11 +4,13 @@ import SwiftUI
 /// later without redesigning the channel screen (the V2 extensible boundary).
 enum ChannelTab: String, CaseIterable, Identifiable {
     case messages = "Messages"
+    case slack = "Slack"
 
     var id: String { rawValue }
     var systemImage: String {
         switch self {
         case .messages: return "bubble.left.and.bubble.right"
+        case .slack: return "number.square"
         }
     }
 }
@@ -29,6 +31,8 @@ struct ChannelView: View {
             switch tab {
             case .messages:
                 MessageStreamView(channel: channel, roots: roots)
+            case .slack:
+                SlackFeedView(channel: channel)
             }
         }
         .navigationTitle("#\(channel.name)")
