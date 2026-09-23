@@ -8,6 +8,9 @@ struct SlackSync {
     let api: SlackAPI
 
     func sync(_ source: SlackSource) async throws -> Int {
+        // A permalink failure must not prevent the message itself from being
+        // imported. Resolve previously deferred links on each refresh.
+        var linkLookupPaused = await resolveMissingLinks(for: source)
         let oldest = source.latestTS
         var cursor: String?
         var fetched: [SlackMessage] = []
@@ -28,8 +31,18 @@ struct SlackSync {
             .map(\.messageTS))
         var newEntries: [SlackEntry] = []
         for message in fetched.reversed() where !known.contains(message.ts) {
-            let link = try await api.permalink(channelID: source.slackChannelID,
-                                               messageTS: message.ts)
+            var link = ""
+            if !linkLookupPaused {
+                do {
+                    link = try await api.permalink(channelID: source.slackChannelID,
+                                                   messageTS: message.ts)
+                } catch SlackAPIError.rateLimited {
+                    // Do not issue more getPermalink calls during this refresh.
+                    linkLookupPaused = true
+                } catch {
+                    // Transient or per-message error: retry on the next refresh.
+                }
+            }
             let entry = SlackEntry(mynaChannelID: source.mynaChannelID,
                                    slackChannelID: source.slackChannelID,
                                    slackChannelName: source.slackChannelName,
@@ -48,5 +61,39 @@ struct SlackSync {
         }
         try context.save()
         return newEntries.count
+    }
+
+    /// Returns true when Slack asked us to stop permalink requests for now.
+    private func resolveMissingLinks(for source: SlackSource) async -> Bool {
+        guard let all = try? context.fetch(FetchDescriptor<SlackEntry>()) else { return false }
+        for entry in all where entry.mynaChannelID == source.mynaChannelID
+            && entry.slackChannelID == source.slackChannelID && entry.permalink.isEmpty {
+            do {
+                entry.permalink = try await api.permalink(channelID: source.slackChannelID,
+                                                          messageTS: entry.messageTS)
+            } catch SlackAPIError.rateLimited {
+                return true
+            } catch {
+                // Leave this link for the next refresh.
+            }
+        }
+        return false
+    }
+}
+
+@MainActor
+struct SlackSourceStore {
+    let context: ModelContext
+
+    /// Unsubscribing removes only this source's imported posts in this Myna
+    /// channel. The same Slack channel may still be selected elsewhere.
+    func remove(_ source: SlackSource) throws {
+        let all = try context.fetch(FetchDescriptor<SlackEntry>())
+        for entry in all where entry.mynaChannelID == source.mynaChannelID
+            && entry.slackChannelID == source.slackChannelID {
+            context.delete(entry)
+        }
+        context.delete(source)
+        try context.save()
     }
 }

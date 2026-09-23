@@ -34,5 +34,7 @@ Open the Slack tab or tap Refresh to sync. Each imported post links back to its
 original Slack message. This is channel history polling, not a mirror of your
 personal Slack notifications or an always-on push service. Slack API access and
 rate limits depend on your workspace and app distribution; errors are shown in
-the feed. Removing the token stops further sync; already imported posts stay on
-the device as an archive.
+the feed. A temporary permalink rate limit leaves the post visible and retries
+its link on the next refresh. Deselecting a Slack channel removes its imported
+posts from that Myna channel. Removing the token stops further sync; already
+imported posts from still-selected channels stay on the device.

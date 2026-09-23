@@ -44,11 +44,15 @@ struct SlackFeedView: View {
                             Text(entry.content)
                                 .font(.body)
                                 .lineLimit(8)
-                            if let url = URL(string: entry.permalink) {
+                            if !entry.permalink.isEmpty, let url = URL(string: entry.permalink) {
                                 Link(destination: url) {
                                     Label("Open in Slack", systemImage: "arrow.up.right.square")
                                         .font(.caption)
                                 }
+                            } else {
+                                Text("Slack link pending · Refresh to retry")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
                             }
                         }
                         .padding(.vertical, 4)
@@ -155,13 +159,18 @@ struct SlackSetupView: View {
                         let selected = sources.first { $0.slackChannelID == conversation.id }
                         Button {
                             if let selected {
-                                context.delete(selected)
+                                do {
+                                    try SlackSourceStore(context: context).remove(selected)
+                                } catch {
+                                    self.error = error.localizedDescription
+                                }
                             } else {
                                 context.insert(SlackSource(mynaChannelID: channel.id,
                                                            slackChannelID: conversation.id,
                                                            slackChannelName: conversation.name))
+                                do { try context.save() }
+                                catch { self.error = error.localizedDescription }
                             }
-                            try? context.save()
                         } label: {
                             HStack {
                                 Text("#\(conversation.name)")
@@ -175,6 +184,9 @@ struct SlackSetupView: View {
                             Text("#\(source.slackChannelName) selected")
                         }
                     }
+                    Text("Deselecting a channel removes its imported posts from this Myna channel.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
                 if let error { Text(error).foregroundStyle(.red) }
             }
