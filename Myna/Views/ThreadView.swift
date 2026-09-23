@@ -56,6 +56,7 @@ struct ThreadView: View {
                     LazyVStack(alignment: .leading, spacing: 0) {
                         MessageRowView(message: root, showsThreadFooter: false)
                             .background(Color.accentColor.opacity(0.06))
+                            .id(root.id)
                         Divider().padding(.leading, 14)
                         ForEach(root.sortedReplies) { reply in
                             MessageRowView(message: reply, showsThreadFooter: false)
@@ -66,8 +67,15 @@ struct ThreadView: View {
                 }
                 .scrollDismissesKeyboard(.interactively)
                 .onAppear {
-                    if let last = root.sortedReplies.last {
+                    if let focused = navigation.focusedMessageID {
+                        proxy.scrollTo(focused, anchor: .center)
+                    } else if let last = root.sortedReplies.last {
                         proxy.scrollTo(last.id, anchor: .bottom)
+                    }
+                }
+                .onChange(of: navigation.focusedMessageID) { _, focused in
+                    if let focused {
+                        proxy.scrollTo(focused, anchor: .center)
                     }
                 }
             }

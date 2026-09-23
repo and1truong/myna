@@ -12,6 +12,7 @@ struct ComposerView: View {
 
     @Environment(\.modelContext) private var modelContext
     @State private var text = ""
+    @State private var reminderError: String?
 
     private let registry = AgentRegistry.default
 
@@ -54,6 +55,14 @@ struct ComposerView: View {
             .padding(.vertical, 8)
         }
         .background(.bar)
+        .alert("Reminder not set", isPresented: Binding(
+            get: { reminderError != nil },
+            set: { if !$0 { reminderError = nil } }
+        )) {
+            Button("OK") { reminderError = nil }
+        } message: {
+            Text(reminderError ?? "")
+        }
     }
 
     private var suggestionList: some View {
@@ -95,6 +104,21 @@ struct ComposerView: View {
             message = store.postMessage(trimmed, in: channel)
         }
         text = ""
+        if let reminder = ReminderParser.parse(trimmed) {
+            let messageID = message.id
+            Task { @MainActor in
+                do {
+                    try await ReminderService.schedule(reminder, messageID: messageID)
+                    guard let persistedMessage = store.message(withID: messageID) else {
+                        ReminderService.cancel(for: messageID)
+                        return
+                    }
+                    store.setReminder(reminder, for: persistedMessage)
+                } catch {
+                    reminderError = error.localizedDescription
+                }
+            }
+        }
         let service = AgentService(store: store, registry: registry)
         Task { await service.processMentions(in: message) }
     }

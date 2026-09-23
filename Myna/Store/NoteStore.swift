@@ -1,6 +1,12 @@
 import Foundation
 import SwiftData
 
+struct ReminderDestination {
+    let channelID: UUID
+    let rootID: UUID
+    let messageID: UUID
+}
+
 /// Domain operations over the SwiftData model context. Views and services go
 /// through this store rather than mutating models directly.
 final class NoteStore {
@@ -97,8 +103,44 @@ final class NoteStore {
     /// Deleting a root cascades to its entire thread; deleting a reply leaves
     /// the rest of the thread intact.
     func delete(_ message: Message) {
+        cancelReminders(in: message)
         context.delete(message)
         save()
+    }
+
+    func setReminder(_ reminder: ReminderRequest, for message: Message) {
+        message.reminderTitle = reminder.title
+        message.reminderDueAt = reminder.dueAt
+        save()
+    }
+
+    func message(withID id: UUID) -> Message? {
+        try? context.fetch(FetchDescriptor<Message>(
+            predicate: #Predicate<Message> { $0.id == id }
+        )).first
+    }
+
+    func reminderDestination(for id: UUID) -> ReminderDestination? {
+        guard let message = message(withID: id),
+              let channelID = message.effectiveChannel?.id else { return nil }
+        return ReminderDestination(channelID: channelID,
+                                   rootID: message.rootMessage.id,
+                                   messageID: message.id)
+    }
+
+    func clearReminder(for message: Message) {
+        ReminderService.cancel(for: message.id)
+        message.reminderTitle = nil
+        message.reminderDueAt = nil
+        save()
+    }
+
+    private func cancelReminders(in message: Message) {
+        // A permission prompt may still be open before reminderDueAt is saved.
+        ReminderService.cancel(for: message.id)
+        for reply in message.replies {
+            cancelReminders(in: reply)
+        }
     }
 
     /// Moves a root message — and with it, automatically, its whole thread —

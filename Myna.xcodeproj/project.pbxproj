@@ -19,6 +19,8 @@
 		733D6E5CDC0E84CB1ECB353E /* ThreadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EAF3E732AFEABA3C6961B42 /* ThreadView.swift */; };
 		767E8A6C86260A013DFC4B8B /* ChannelListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231BCA5DC116CE284D039DA3 /* ChannelListView.swift */; };
 		906F790804E1E02421EF46A1 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85D293AB77379EAE6AAD67E8 /* RootView.swift */; };
+		A468BDA7B5C947E6A8F79A1C /* ReminderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B468BDA7B5C947E6A8F79A1C /* ReminderService.swift */; };
+		A468BDA7B5C947E6A8F79A1D /* ReminderParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B468BDA7B5C947E6A8F79A1D /* ReminderParserTests.swift */; };
 		B200B0ABFF0913217407061C /* MentionParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53948D76B8EDC266978ED9B7 /* MentionParser.swift */; };
 		BE2D9EC50A5E5FC31B31C67D /* MessageRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB2C79C9A7DADB3253B2F359 /* MessageRowView.swift */; };
 		C4A9B6F93E5CEB96862AC2A1 /* MynaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ACE3072CA3C8D433A6E6B8B /* MynaApp.swift */; };
@@ -56,6 +58,8 @@
 		8A07070BF90300D232EA2F44 /* MynaTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MynaTests.swift; sourceTree = "<group>"; };
 		8ACE3072CA3C8D433A6E6B8B /* MynaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MynaApp.swift; sourceTree = "<group>"; };
 		AE1684FAA86C191A478E9516 /* NoteStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteStore.swift; sourceTree = "<group>"; };
+		B468BDA7B5C947E6A8F79A1C /* ReminderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderService.swift; sourceTree = "<group>"; };
+		B468BDA7B5C947E6A8F79A1D /* ReminderParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderParserTests.swift; sourceTree = "<group>"; };
 		AF53430E06F114EBDDC73219 /* DevAgents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevAgents.swift; sourceTree = "<group>"; };
 		B6BFDC22E1A0C02E00325472 /* MentionParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MentionParserTests.swift; sourceTree = "<group>"; };
 		BB2C79C9A7DADB3253B2F359 /* MessageRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageRowView.swift; sourceTree = "<group>"; };
@@ -92,6 +96,7 @@
 			children = (
 				B6BFDC22E1A0C02E00325472 /* MentionParserTests.swift */,
 				8A07070BF90300D232EA2F44 /* MynaTests.swift */,
+				B468BDA7B5C947E6A8F79A1D /* ReminderParserTests.swift */,
 			);
 			path = MynaTests;
 			sourceTree = "<group>";
@@ -110,6 +115,14 @@
 				ED2ADDF188F2CA07EA6408B6 /* MarkdownText.swift */,
 			);
 			path = Utilities;
+			sourceTree = "<group>";
+		};
+		A468BDA7B5C947E6A8F79A1E /* Reminders */ = {
+			isa = PBXGroup;
+			children = (
+				B468BDA7B5C947E6A8F79A1C /* ReminderService.swift */,
+			);
+			path = Reminders;
 			sourceTree = "<group>";
 		};
 		56B354B4A19B68514B78BF79 /* Store */ = {
@@ -143,6 +156,7 @@
 				8ACE3072CA3C8D433A6E6B8B /* MynaApp.swift */,
 				045083558A850B74133AFF34 /* Agents */,
 				3A339655886E9531DD9356A6 /* Models */,
+				A468BDA7B5C947E6A8F79A1E /* Reminders */,
 				56B354B4A19B68514B78BF79 /* Store */,
 				567783D1AB2A11488986FEF7 /* Utilities */,
 				609959B0DE4FAFD96EA04CBC /* Views */,
@@ -235,6 +249,7 @@
 			files = (
 				1D5219FB2E95FBBA4AAA93B4 /* MentionParserTests.swift in Sources */,
 				6F032367D6BDAB5952011432 /* MynaTests.swift in Sources */,
+				A468BDA7B5C947E6A8F79A1D /* ReminderParserTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -257,6 +272,7 @@
 				13FE5826C3F4BA7D893F8D5B /* MynaAgent.swift in Sources */,
 				C4A9B6F93E5CEB96862AC2A1 /* MynaApp.swift in Sources */,
 				30866C1F500D3DA66AC5BB5B /* NoteStore.swift in Sources */,
+				A468BDA7B5C947E6A8F79A1C /* ReminderService.swift in Sources */,
 				906F790804E1E02421EF46A1 /* RootView.swift in Sources */,
 				EF4A0A4D36B6F04B07F7F15A /* Sheets.swift in Sources */,
 				733D6E5CDC0E84CB1ECB353E /* ThreadView.swift in Sources */,

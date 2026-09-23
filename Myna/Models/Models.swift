@@ -49,6 +49,9 @@ final class Message {
     var authorID: String = NoteStore.humanAuthorID
     /// True while an agent response is being generated (the "is thinking…" placeholder).
     var isPending: Bool = false
+    /// A local notification attached to this message, if one was scheduled.
+    var reminderDueAt: Date?
+    var reminderTitle: String?
 
     /// Set on root messages only; replies leave this nil and derive their channel.
     var channel: Channel?
