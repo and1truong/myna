@@ -24,7 +24,8 @@ enum ReminderParser {
 
     static func parseCommand(_ text: String, now: Date = Date()) throws -> ReminderRequest? {
         let command = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard command.lowercased().hasPrefix("/remind") else { return nil }
+        let commandName = command.prefix { !$0.isWhitespace }
+        guard commandName.lowercased() == "/remind" else { return nil }
         let range = NSRange(command.startIndex..<command.endIndex, in: command)
         guard let match = pattern.firstMatch(in: command, range: range),
               let amountRange = Range(match.range(at: 1), in: command),

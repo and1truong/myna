@@ -26,11 +26,14 @@ final class ReminderParserTests: XCTestCase {
         XCTAssertNil(try ReminderParser.parseCommand("15m nữa nhắc anh làm việc nọ việc kia", now: now))
         XCTAssertNil(try ReminderParser.parseCommand("ghi chú cuộc họp", now: now))
         XCTAssertNil(try ReminderParser.parseCommand("/feed subscribe https://example.com/rss", now: now))
+        XCTAssertNil(try ReminderParser.parseCommand("/reminders 15m task", now: now))
+        XCTAssertNil(try ReminderParser.parseCommand("/remindful 15m task", now: now))
+        XCTAssertNil(try ReminderParser.parseCommand("/remind15m task", now: now))
     }
 
     func testMalformedCommandThrowsUsageError() {
         for command in ["/remind", "/remind 15m", "/remind abc task", "/remind 0m task",
-                        "/remind 10081m task", "/remind 1d task", "/remind15m task"] {
+                        "/remind 10081m task", "/remind 1d task"] {
             XCTAssertThrowsError(try ReminderParser.parseCommand(command, now: now), command) { error in
                 XCTAssertTrue(error is ReminderCommandError)
             }
