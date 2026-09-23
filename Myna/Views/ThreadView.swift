@@ -1,7 +1,7 @@
 import SwiftData
 import SwiftUI
 
-/// Slack's thread pane — the split view's detail column on iPad, a push on
+/// Thread pane — the split view's detail column on Mac and iPad, a push on
 /// iPhone: root note on top, replies below, reply composer at the bottom.
 /// Agent @mentions work here too — agent responses land as thread replies.
 struct ThreadView: View {
@@ -32,7 +32,7 @@ struct ThreadView: View {
         .toolbar {
             // Compact offers Back; expanded needs an explicit close to return
             // the detail column to its placeholder.
-            if horizontalSizeClass == .regular {
+            if showsCloseButton {
                 ToolbarItem(placement: .primaryAction) {
                     Button { navigation.closeThread() } label: {
                         Image(systemName: "xmark")
@@ -47,6 +47,14 @@ struct ThreadView: View {
                 dismiss()
             }
         }
+    }
+
+    private var showsCloseButton: Bool {
+        #if targetEnvironment(macCatalyst)
+        true
+        #else
+        horizontalSizeClass == .regular
+        #endif
     }
 
     private func threadContent(_ root: Message) -> some View {

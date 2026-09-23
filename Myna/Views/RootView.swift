@@ -1,11 +1,9 @@
 import SwiftData
 import SwiftUI
 
-/// Adaptive root: a three-column `NavigationSplitView`. Expanded (iPad,
-/// iPhone landscape where space allows) the columns are channels → channel →
-/// thread; compact (iPhone portrait, Split View) it collapses into the same
-/// Channels → Channel → Thread stack as before — one `NavigationModel` holds
-/// the selections either way.
+/// Adaptive root: a three-column `NavigationSplitView`. On Mac, each column
+/// renders its selected value directly. On iOS, item destinations preserve
+/// the compact Channels → Channel → Thread navigation stack.
 @MainActor
 struct RootView: View {
     @Environment(\.modelContext) private var modelContext
@@ -24,31 +22,40 @@ struct RootView: View {
 
     var body: some View {
         NavigationSplitView(columnVisibility: $navigation.columnVisibility) {
+            #if targetEnvironment(macCatalyst)
             ChannelListView(selection: channelSelection)
-                // Item-driven presentation: lands in the content column when
-                // expanded (a swap, not a push) and pushes when collapsed —
-                // one binding drives the channel on both form factors.
+            #else
+            ChannelListView(selection: channelSelection)
                 .navigationDestination(item: channelSelection) { channelID in
                     ChannelDestination(channelID: channelID)
                         .id(channelID)
                 }
+            #endif
         } content: {
-            ContentUnavailableView(
-                "Select a channel",
-                systemImage: "number",
-                description: Text("Pick a channel from the sidebar.")
-            )
-            // Same mechanism one column further right: the thread appears in
-            // the detail column when expanded and pushes when collapsed.
-            .navigationDestination(item: $navigation.selectedThreadID) { rootID in
-                ThreadView(rootID: rootID)
+            #if targetEnvironment(macCatalyst)
+            if let channelID = navigation.selectedChannelID {
+                ChannelDestination(channelID: channelID)
+                    .id(channelID)
+            } else {
+                channelPlaceholder
             }
+            #else
+            channelPlaceholder
+                .navigationDestination(item: $navigation.selectedThreadID) { rootID in
+                    ThreadView(rootID: rootID)
+                }
+            #endif
         } detail: {
-            ContentUnavailableView(
-                "No thread selected",
-                systemImage: "bubble.left.and.bubble.right",
-                description: Text("Open a thread to follow the conversation here.")
-            )
+            #if targetEnvironment(macCatalyst)
+            if let rootID = navigation.selectedThreadID {
+                ThreadView(rootID: rootID)
+                    .id(rootID)
+            } else {
+                threadPlaceholder
+            }
+            #else
+            threadPlaceholder
+            #endif
         }
         .environment(navigation)
         .task {
@@ -65,6 +72,22 @@ struct RootView: View {
         .onChange(of: reminderNavigation.pendingMessageID) { _, _ in
             openPendingReminder()
         }
+    }
+
+    private var channelPlaceholder: some View {
+        ContentUnavailableView(
+            "Select a channel",
+            systemImage: "number",
+            description: Text("Pick a channel from the sidebar.")
+        )
+    }
+
+    private var threadPlaceholder: some View {
+        ContentUnavailableView(
+            "No thread selected",
+            systemImage: "bubble.left.and.bubble.right",
+            description: Text("Open a thread to follow the conversation here.")
+        )
     }
 
     private func openPendingReminder() {
