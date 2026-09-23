@@ -127,6 +127,26 @@ final class NoteStoreTests: XCTestCase {
         XCTAssertNil(store.reminderDestination(for: deletedReplyID))
     }
 
+    func testReminderCommandCreatesReadableAnchorInThread() throws {
+        let channel = store.createChannel(name: "inbox")
+        let root = store.postMessage("project", in: channel)
+        let reminder = try XCTUnwrap(ReminderParser.parseCommand(
+            "/remind 15m làm việc nọ việc kia",
+            now: Date(timeIntervalSince1970: 1_700_000_000)
+        ))
+
+        let anchor = try store.postReminderAnchor(reminder, in: nil, replyingTo: root)
+        XCTAssertEqual(anchor.content, "🔔 làm việc nọ việc kia")
+        XCTAssertFalse(anchor.content.contains("/remind"))
+        XCTAssertEqual(anchor.parent?.id, root.id)
+        XCTAssertEqual(anchor.effectiveChannel?.id, channel.id)
+        XCTAssertNil(anchor.reminderDueAt)
+
+        try store.setReminder(reminder, for: anchor)
+        XCTAssertEqual(anchor.reminderDueAt, reminder.dueAt)
+        XCTAssertEqual(anchor.reminderTitle, reminder.title)
+    }
+
     // MARK: - Edit / delete
 
     func testEditMessage() throws {

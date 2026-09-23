@@ -108,16 +108,46 @@ final class NoteStore {
         save()
     }
 
-    func setReminder(_ reminder: ReminderRequest, for message: Message) {
+    func setReminder(_ reminder: ReminderRequest, for message: Message) throws {
         message.reminderTitle = reminder.title
         message.reminderDueAt = reminder.dueAt
-        save()
+        do {
+            try context.save()
+        } catch {
+            message.reminderTitle = nil
+            message.reminderDueAt = nil
+            throw error
+        }
     }
 
     func message(withID id: UUID) -> Message? {
         try? context.fetch(FetchDescriptor<Message>(
             predicate: #Predicate<Message> { $0.id == id }
         )).first
+    }
+
+    func channel(withID id: UUID) -> Channel? {
+        try? context.fetch(FetchDescriptor<Channel>(
+            predicate: #Predicate<Channel> { $0.id == id }
+        )).first
+    }
+
+    /// A command becomes a visible note only after notification permission is granted.
+    func postReminderAnchor(_ reminder: ReminderRequest,
+                            in channel: Channel?,
+                            replyingTo root: Message?) throws -> Message {
+        guard channel != nil || root != nil else { throw ReminderError.destinationUnavailable }
+        let anchor = Message(content: "🔔 \(reminder.title)",
+                             channel: root == nil ? channel : nil,
+                             parent: root)
+        context.insert(anchor)
+        do {
+            try context.save()
+        } catch {
+            context.delete(anchor)
+            throw error
+        }
+        return anchor
     }
 
     func reminderDestination(for id: UUID) -> ReminderDestination? {

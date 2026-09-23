@@ -4,33 +4,36 @@ import XCTest
 final class ReminderParserTests: XCTestCase {
     private let now = Date(timeIntervalSince1970: 1_700_000_000)
 
-    func testVietnameseShortMinuteCommand() throws {
-        let reminder = try XCTUnwrap(ReminderParser.parse(
-            "15m nữa nhắc anh làm việc nọ việc kia", now: now
+    func testExplicitMinuteCommand() throws {
+        let reminder = try XCTUnwrap(ReminderParser.parseCommand(
+            "/remind 15m làm việc nọ việc kia", now: now
         ))
         XCTAssertEqual(reminder.title, "làm việc nọ việc kia")
         XCTAssertEqual(reminder.dueAt, now.addingTimeInterval(15 * 60))
     }
 
-    func testSpelledOutMinuteAndHour() throws {
-        let minutes = try XCTUnwrap(ReminderParser.parse("30 phút nữa nhắc tôi uống nước", now: now))
-        XCTAssertEqual(minutes.dueAt, now.addingTimeInterval(30 * 60))
-        XCTAssertEqual(minutes.title, "uống nước")
-
-        let hours = try XCTUnwrap(ReminderParser.parse("2h nữa nhắc họp", now: now))
+    func testHourAndLocalizedUnits() throws {
+        let hours = try XCTUnwrap(ReminderParser.parseCommand("/remind 2h họp", now: now))
         XCTAssertEqual(hours.dueAt, now.addingTimeInterval(2 * 60 * 60))
         XCTAssertEqual(hours.title, "họp")
 
-        let spelledHours = try XCTUnwrap(ReminderParser.parse("1 giờ nữa nhắc em gọi mẹ", now: now))
-        XCTAssertEqual(spelledHours.dueAt, now.addingTimeInterval(60 * 60))
-        XCTAssertEqual(spelledHours.title, "gọi mẹ")
+        let minutes = try XCTUnwrap(ReminderParser.parseCommand("/remind 30 phút uống nước", now: now))
+        XCTAssertEqual(minutes.dueAt, now.addingTimeInterval(30 * 60))
+        XCTAssertEqual(minutes.title, "uống nước")
     }
 
-    func testOrdinaryAndInvalidMessagesDoNotSchedule() {
-        XCTAssertNil(ReminderParser.parse("ghi chú cuộc họp", now: now))
-        XCTAssertNil(ReminderParser.parse("0m nữa nhắc anh làm việc", now: now))
-        XCTAssertNil(ReminderParser.parse("10081m nữa nhắc anh làm việc", now: now))
-        XCTAssertNil(ReminderParser.parse("15m nữa nhắc anh", now: now))
-        XCTAssertNil(ReminderParser.parse("15m nữa nhắc", now: now))
+    func testOrdinaryTextNeverSchedules() throws {
+        XCTAssertNil(try ReminderParser.parseCommand("15m nữa nhắc anh làm việc nọ việc kia", now: now))
+        XCTAssertNil(try ReminderParser.parseCommand("ghi chú cuộc họp", now: now))
+        XCTAssertNil(try ReminderParser.parseCommand("/feed subscribe https://example.com/rss", now: now))
+    }
+
+    func testMalformedCommandThrowsUsageError() {
+        for command in ["/remind", "/remind 15m", "/remind abc task", "/remind 0m task",
+                        "/remind 10081m task", "/remind 1d task", "/remind15m task"] {
+            XCTAssertThrowsError(try ReminderParser.parseCommand(command, now: now), command) { error in
+                XCTAssertTrue(error is ReminderCommandError)
+            }
+        }
     }
 }
