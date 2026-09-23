@@ -1,0 +1,33 @@
+name: Mac Catalyst build
+
+on:
+  push:
+    branches:
+      - codex/mac-catalyst-build
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build for Intel Mac
+        run: |
+          xcodebuild \
+            -project Myna.xcodeproj \
+            -scheme Myna \
+            -configuration Release \
+            -destination 'platform=macOS,variant=Mac Catalyst,arch=x86_64' \
+            -derivedDataPath "$RUNNER_TEMP/MynaDerivedData" \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+      - name: Package app
+        run: |
+          ditto -c -k --sequesterRsrc --keepParent \
+            "$RUNNER_TEMP/MynaDerivedData/Build/Products/Release-maccatalyst/Myna.app" \
+            "$RUNNER_TEMP/Myna-mac-intel.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Myna-mac-intel
+          path: ${{ runner.temp }}/Myna-mac-intel.zip
+          if-no-files-found: error

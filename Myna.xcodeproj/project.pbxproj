@@ -318,8 +318,10 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.1;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.and1truong.myna;
 				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -437,8 +439,10 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.1;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.and1truong.myna;
 				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

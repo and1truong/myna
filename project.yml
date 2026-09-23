@@ -30,6 +30,8 @@ targets:
         SWIFT_VERSION: "5.0"
         MARKETING_VERSION: "0.1"
         TARGETED_DEVICE_FAMILY: "1,2"
+        SUPPORTS_MACCATALYST: YES
+        MACOSX_DEPLOYMENT_TARGET: "14.0"
   MynaTests:
     type: bundle.unit-test
     platform: iOS
