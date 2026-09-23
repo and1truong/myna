@@ -1,3 +1,4 @@
+import SwiftData
 import SwiftUI
 
 /// A channel hosts tabs — `[ Messages ]` today; Notes, Bookmarks, etc. plug in
@@ -16,6 +17,16 @@ enum ChannelTab: String, CaseIterable, Identifiable {
 struct ChannelView: View {
     let channel: Channel
     @State private var tab: ChannelTab = .messages
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.scenePhase) private var scenePhase
+    @Query private var allFeeds: [RSSFeed]
+    @State private var showingSettings = false
+    @State private var isRefreshing = false
+    @State private var isVisible = false
+    @State private var feedError: String?
+
+    private var feeds: [RSSFeed] { allFeeds.filter { $0.channelID == channel.id } }
+    private var shouldRunFeedChecks: Bool { isVisible && scenePhase == .active }
 
     private var roots: [Message] {
         channel.messages
@@ -33,6 +44,57 @@ struct ChannelView: View {
         }
         .navigationTitle("#\(channel.name)")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button { showingSettings = true } label: {
+                    Image(systemName: "gearshape")
+                }
+                .accessibilityLabel("Channel Settings")
+            }
+            if !feeds.isEmpty {
+                ToolbarItem(placement: .secondaryAction) {
+                    Button { Task { await refreshFeeds(force: true) } } label: {
+                        Image(systemName: "arrow.clockwise")
+                    }
+                    .disabled(isRefreshing)
+                    .accessibilityLabel("Refresh feeds now")
+                }
+            }
+        }
+        .sheet(isPresented: $showingSettings) { RSSFeedSettingsView(channel: channel) }
+        .onAppear { isVisible = true }
+        .onDisappear { isVisible = false }
+        .task(id: shouldRunFeedChecks) {
+            guard shouldRunFeedChecks else { return }
+            await refreshFeeds(force: false)
+            while !Task.isCancelled {
+                do { try await Task.sleep(nanoseconds: 60_000_000_000) }
+                catch { break }
+                await refreshFeeds(force: false)
+            }
+        }
+        .onChange(of: feeds.map(\.id)) { _, _ in
+            if shouldRunFeedChecks { Task { await refreshFeeds(force: false) } }
+        }
+        .alert("Feed refresh failed", isPresented: Binding(
+            get: { feedError != nil }, set: { if !$0 { feedError = nil } }
+        )) {
+            Button("OK") { feedError = nil }
+        } message: { Text(feedError ?? "") }
+    }
+
+    @MainActor
+    private func refreshFeeds(force: Bool) async {
+        guard !isRefreshing, force || (isVisible && scenePhase == .active) else { return }
+        isRefreshing = true
+        defer { isRefreshing = false }
+        let store = RSSStore(context: modelContext)
+        var failures: [String] = []
+        for feed in feeds where force || RSSStore.isDue(feed) {
+            do { try await store.refresh(feed, in: channel) }
+            catch { failures.append("\(feed.title): \(error.localizedDescription)") }
+        }
+        if !failures.isEmpty { feedError = failures.joined(separator: "\n") }
     }
 }
 
